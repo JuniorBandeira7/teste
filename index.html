@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="COLOQUE_AQUI_SEU_CSRF_TOKEN">
+    <title>Teste de Captura de Vídeo + Áudio</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        video { border: 1px solid #ccc; max-width: 100%; margin-bottom: 10px; }
+        button { padding: 10px 15px; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Teste de Captura de Vídeo + Áudio</h2>
+    
+    <video id="preview" autoplay muted></video>
+    <video id="recordedVideo" controls style="display:none;"></video>
+    <br>
+    <button id="startRecording">Iniciar Gravação</button>
+    <button id="stopRecording" disabled>Parar Gravação</button>
+
+    <script>
+        const preview = document.getElementById('preview');
+        const recordedVideo = document.getElementById('recordedVideo');
+        const startButton = document.getElementById('startRecording');
+        const stopButton = document.getElementById('stopRecording');
+
+        let mediaRecorder;
+        let recordedChunks = [];
+
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "user", width: 640, height: 480 },
+                    audio: true
+                });
+                preview.srcObject = stream;
+
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.ondataavailable = e => {
+                    if (e.data.size > 0) recordedChunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    recordedChunks = [];
+
+                    // Mostrar vídeo gravado
+                    recordedVideo.src = URL.createObjectURL(blob);
+                    recordedVideo.style.display = 'block';
+
+                    // Enviar para backend (opcional)
+                    const formData = new FormData();
+                    formData.append('video', blob, 'video.webm');
+
+                    try {
+                        const response = await fetch('/upload-video', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            }
+                        });
+                        const data = await response.json();
+                        console.log('Vídeo enviado:', data);
+                    } catch (err) {
+                        console.error('Erro ao enviar vídeo:', err);
+                    }
+                };
+            } catch (err) {
+                console.error('Erro ao acessar câmera/microfone:', err);
+                alert('Não foi possível acessar câmera ou microfone.');
+            }
+        }
+
+        startButton.addEventListener('click', () => {
+            if (mediaRecorder) {
+                mediaRecorder.start();
+                startButton.disabled = true;
+                stopButton.disabled = false;
+                console.log('Gravação iniciada');
+            }
+        });
+
+        stopButton.addEventListener('click', () => {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                startButton.disabled = false;
+                stopButton.disabled = true;
+                console.log('Gravação parada');
+            }
+        });
+
+        // Inicializa câmera ao carregar a página
+        window.addEventListener('load', initCamera);
+    </script>
+</body>
+</html>
