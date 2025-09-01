@@ -119,7 +119,7 @@
         });
 
         navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "user" }, // frontal
+            video: { facingMode: "environment" }, // frontal
             audio: false
         })
             .then(stream => {
@@ -140,6 +140,8 @@
 
             // Inicializa câmera ao carregar a página
             window.addEventListener('load', initCamera);
+
+        });
     </script>
 </body>
 
