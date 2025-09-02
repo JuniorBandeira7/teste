@@ -1,55 +1,30 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="COLOQUE_AQUI_SEU_CSRF_TOKEN">
     <title>Teste de Captura de Vídeo + Áudio</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background: #f0f0f0;
-        }
-
-        video {
-            border: 1px solid #ccc;
-            max-width: 100%;
-            margin-bottom: 10px;
-        }
-
-        button {
-            padding: 10px 15px;
-            margin-right: 10px;
-        }
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        video { border: 1px solid #ccc; max-width: 100%; margin-bottom: 10px; }
+        button { padding: 10px 15px; margin-right: 10px; }
     </style>
 </head>
-
 <body>
     <h2>Teste de Captura de Vídeo + Áudio</h2>
-
+    
     <video id="preview" autoplay muted></video>
     <video id="recordedVideo" controls style="display:none;"></video>
     <br>
     <button id="startRecording">Iniciar Gravação</button>
     <button id="stopRecording" disabled>Parar Gravação</button>
 
-    <video id="preview" autoplay playsinline></video>
-    <br>
-    <button id="capture">📸 Capturar Foto</button>
-    <canvas id="snapshot" style="display:none;"></canvas>
-    <img id="photo" alt="Sua foto aparecerá aqui" style="max-width:100%; margin-top:10px;">
-
     <script>
         const preview = document.getElementById('preview');
         const recordedVideo = document.getElementById('recordedVideo');
         const startButton = document.getElementById('startRecording');
         const stopButton = document.getElementById('stopRecording');
-        const video = document.getElementById('preview');
-        const captureBtn = document.getElementById('capture');
-        const canvas = document.getElementById('snapshot');
-        const photo = document.getElementById('photo');
 
         let mediaRecorder;
         let recordedChunks = [];
@@ -118,31 +93,8 @@
             }
         });
 
-        navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" }, // frontal
-            audio: false
-        })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(err => console.error("Erro ao acessar câmera:", err));
-
-        // Captura foto
-        captureBtn.addEventListener('click', () => {
-            const context = canvas.getContext('2d');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // Mostra a foto
-            const dataUrl = canvas.toDataURL('image/png');
-            photo.src = dataUrl;
-
-            // Inicializa câmera ao carregar a página
-            window.addEventListener('load', initCamera);
-
-        });
+        // Inicializa câmera ao carregar a página
+        window.addEventListener('load', initCamera);
     </script>
 </body>
-
 </html>
